@@ -1,0 +1,4 @@
+test/.chrome-profile/
+test/shots/
+*.log
+__pycache__/
