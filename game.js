@@ -488,7 +488,7 @@ function paintBest() {
   const b = loadBest();
   $('best').innerHTML = b.score
     ? `Personal best &middot; <b>${b.score.toLocaleString()}</b> pts &middot; wave <b>${b.wave}</b> &middot; <b>${b.wpm}</b> WPM &middot; <b>${b.acc}%</b> accuracy`
-    : `No runs yet — the first one is always the slowest.`;
+    : `No runs yet.`;
 }
 
 /* ------------------------------------------------------------------ *

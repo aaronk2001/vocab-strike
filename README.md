@@ -1,177 +1,121 @@
 # Vocab Strike
 
-A ZType-style typing game built over the **Ascent** glossary. Type the **term** to
-destroy the incoming ship, then type its **definition** to bank the intel.
+A typing game for learning technical vocabulary. Ships fly in carrying a term;
+type the term to shoot the ship down. After each wave you type the definition
+of every term you shot.
 
-Inspired by the games on [typing.com/student/games](https://www.typing.com/student/games)
-— specifically **ZType**, where you type the letters attached to incoming objects to
-blow them up. The twist here is the two-phase loop: terms are the arcade layer,
-definitions are the study layer.
+It plays like [ZType](https://zty.pe/), with a second study phase added. The
+built-in decks cover industrial controls, machine learning and computer vision,
+and electrical and mechanical engineering. You can add your own words.
 
 ![Defend phase](assets/defend.png)
 ![Decode phase](assets/decode.png)
 
-Open `index.html` in a browser. No build step, no server, no dependencies —
-`data.js` is a plain script tag, so it works straight off `file://`.
+## Play
 
----
+Clone the repo and open `index.html` in a browser. It is plain HTML and
+JavaScript with no dependencies, so it runs straight from the file.
 
-## The loop
+## How it works
 
-| Phase | What you type | What happens |
-|---|---|---|
-| **1 · DEFEND** | The **term** on each ship | Correct key → the ship takes damage; finish the word → it explodes, +60 × combo, and the term is salvaged. A ship that reaches your hull costs 1 hull. |
-| **2 · DECODE** | The **definition** of every salvaged term | Type it before the timer runs out for a speed bonus. Run out and the card is marked missed. No game over here — definitions only affect score. |
+Each wave has two phases.
 
-Then the next wave starts, faster and larger.
+1. **Defend.** Ships move toward you from the right, each labelled with a
+   term. Type a term to destroy its ship. A ship that reaches you costs one
+   hull point, and the run ends when your hull is gone.
+2. **Decode.** Once the wave is clear, you get the definition of each term from
+   that wave. Type each one before its timer runs out. Finishing early earns a
+   speed bonus. A missed or skipped definition scores nothing and resets your
+   combo, but doesn't cost hull.
 
-**Rules**
+Waves get faster and bigger as you go, from 3 ships up to 5.
 
-- Comparison is **case-insensitive** — `4-20 ma` scores the same as `4-20 mA`.
-- **A wrong key locks the word.** The mistake is committed: it costs accuracy,
-  resets your combo, and the word stops accepting letters until you press
-  **Backspace** to clear it. Backspace does nothing when there's no mistake.
-- `Esc` pause · `Enter` skip a definition · `M` mute (menu and pause only, since
-  `M` is a letter you type during play).
-- Combo multiplies score every 15 clean keystrokes, up to ×5.
+Rules:
 
-**Controls in the menus** — `Enter` start / restart, `Esc` back from game over,
-`Q` quit to menu while paused. Everything is also clickable.
+- Case doesn't matter. `4-20 ma` counts as `4-20 mA`.
+- Once you type the first letter of a term, you are locked onto that ship until
+  it's destroyed.
+- A wrong key costs accuracy, resets your combo, and freezes the word. Press
+  Backspace to clear the mistake and keep typing.
+- Every 15 correct keys in a row raises the score multiplier, up to ×5.
 
----
+| Key | Action |
+|---|---|
+| `Enter` | Start or restart a run; skip a definition during Decode |
+| `Esc` | Pause or resume; back to the menu from the results screen |
+| `Backspace` | Clear a mistake |
+| `Q` | Quit to the menu while paused |
+| `M` | Mute, from the menu or pause screen only |
 
-## Word lists
+## Difficulty
 
-Everything comes from the Ascent career-planner project:
+| | Ship speed | Definition timer | Hull |
+|---|---|---|---|
+| Cadet | 70% | 145% | 5 |
+| Operator | 100% | 100% | 3 |
+| Vanguard | 145% | 76% | 2 |
 
-- `vocab_definitions.yaml` — the Learning-track glossary (controls + ML/CV)
-- `engineering_formulas.yaml` — electrical / mechanical / mechanisms entries
+The base timer is 6 seconds plus 0.25 seconds per character. A 140-character
+definition gets 41 seconds on Operator, 59 on Cadet and 31 on Vanguard.
 
-`glossary.py` merges both and infers each term's domain from its track file, so
-the game inherits the same four decks:
+## Decks
 
-| Deck | Entries |
+| Deck | Terms |
 |---|---|
 | All systems | 286 |
 | ML / CV | 157 |
 | EE + Mech | 86 |
 | Controls | 43 |
+| My words | whatever you add |
 
-### Adding your own words
+Symbols are written out as plain ASCII so everything can be typed on a US
+keyboard. The Decode screen still shows the original notation after you finish.
 
-Click the dashed **+ Add words** chip in the Deck group (or click the **My words**
-chip when it's empty). The editor opens over the menu:
-
-1. Type a **term** and a **definition** — the preview shows exactly what you'll
-   type, already ASCII-normalised the same way the built-in lists are (so `≥`
-   becomes `>=`, `φ` becomes `phi`, smart quotes become straight ones).
-2. **Formula** is optional and display-only — it appears in the DECODE results
-   banner but is never typed.
-3. Hit **Add word** (or just press `Enter`). Duplicates are rejected, and the
-   word is playable immediately — it joins the **My words** deck, counts inside
-   **All systems**, and shows up in the very next run.
-
-Your words persist in `localStorage` (`vocabstrike.words.v1`), so they survive
-reloads and browser restarts but never touch `data.js`. Use **Export** to save
-the list as JSON and **Import** to load one back — re-importing the same file
-de-duplicates instead of doubling up. Words you add are listed in the panel
-with a delete button each.
-
-### Regenerating the data
-
-```
-"<Ascent>/.venv/Scripts/python.exe" build_data.py
-```
-
-The Ascent checkout defaults to the path at the top of `build_data.py`; set
-`ASCENT_DIR` to point it elsewhere.
-
-`build_data.py` reads the YAML through Ascent's own `glossary.py` (so domain tags
-and definitions stay identical to what the app shows), then writes `data.js`.
-
-It also **ASCII-normalises** the text so every target is something a US keyboard
-can actually produce. You still see the original notation in the DECODE results
-banner; what you type is the plain-ASCII form:
-
-| source | you type |
+| Source | You type |
 |---|---|
 | `P = V·I·cosφ` | `P = V*I*cos phi` |
 | `Z = √(R² + (XL - Xc)²)` | `Z = sqrt(R^2 + (XL - Xc)^2)` |
-| `Timer Off-Delay — output stays on…` | `Timer Off-Delay - output stays on…` |
+| `Timer Off-Delay — output stays on` | `Timer Off-Delay - output stays on` |
 
-After a build the script reports whether any *terms* needed normalising (today:
-none) plus entry counts and definition length range.
+## Adding your own words
 
----
+Click **+ Add words** on the menu. Enter a term and a definition; the preview
+shows exactly what you will have to type. The formula field is optional and is
+only displayed, never typed.
 
-## Difficulty
+Your words always appear in **My words** and **All systems**. If you pick
+another deck for a word, it shows up there too. They are saved in your
+browser's local storage, so they stay between sessions but only on that
+browser.
 
-| | Ships | Timer | Hull |
-|---|---|---|---|
-| **Cadet** | 70% speed | 145% longer | 5 |
-| **Operator** | baseline | baseline | 3 |
-| **Vanguard** | 145% speed | 76% of baseline | 2 |
+**Export JSON** saves your list to a file. **Import JSON** loads one back and
+skips any term you already have. Import accepts the exported file or a plain
+array like this:
 
-Ship speed and spawn rate also scale with the wave number. Definition timers are
-derived from length (`6s + 0.25s × characters`), so a 140-character definition
-gets ~41s on Cadet and ~21s on Vanguard.
+```json
+[
+  { "term": "backlash", "definition": "Lost motion caused by clearance between gear teeth" },
+  { "term": "PID", "definition": "Controller that acts on proportional, integral and derivative error", "deck": "controls" }
+]
+```
 
----
+`deck` is optional: `mine` (default), `controls`, `ml` or `mech`.
 
 ## Files
 
 ```
-index.html        markup + styles (palette mirrors Ascent's frontend tokens)
-game.js           engine: game loop, input, render, WebAudio SFX
-data.js           generated word list — do not edit
-words.js          your word store: localStorage persistence, sanitize, import/export
-build_data.py     regenerates data.js from the Ascent YAMLs
-test/audit.mjs    checks every entry has a real, typable definition
-test/smoke.mjs    plays a full run over the Chrome DevTools Protocol
+index.html      markup and styles
+game.js         game loop, input, rendering, sound
+words.js        custom word storage, import and export
+data.js         built-in word list (generated)
+build_data.py   regenerates data.js
+test/           word list audit and a headless Chrome play-through
 ```
 
-### Design notes
+`data.js` is generated from the glossary in Ascent, a separate private project,
+and is committed so the game works without it. With an Ascent checkout, set
+`ASCENT_DIR` and run `python build_data.py` using Ascent's Python environment.
 
-- **Palette** matches Ascent's active `frontend/src/style.css` tokens: ink
-  `#050509`, brand indigo `#6366f1`, cyan `#22d3ee`, danger `#f43f5e`.
-- **Typing focus** works like ZType: a ship becomes *engaged* when you land its
-  first character. While engaged you're locked to that word — pressing something
-  else is an error rather than a silent switch. Before you engage, the nearest
-  ship is suggested in the prompt bar with a `NEXT KEY` box, so accuracy misses
-  are genuinely your mistake rather than guesswork.
-- `window.VS` is a dev handle: `VS.S` is the live state, `VS.pressKey('a')`
-  sends a keystroke. That's what the smoke test drives.
+## License
 
-### Running the test
-
-Audit the word list first — every entry must have a real, typable definition:
-
-```
-node test/audit.mjs
-```
-
-It flags empty or placeholder definitions, definitions shorter than 12 typable
-characters, unknown decks, and duplicate terms (exact duplicates fail; purely
-case-insensitive collisions like `mAP` vs `map` are warnings, since typing is
-case-insensitive by design).
-
-Then play the game end to end. Needs Chrome; it loads `index.html` straight off
-`file://`, so there is no server to start:
-
-```
-node test/smoke.mjs
-```
-
-Set `CHROME_PATH` if Chrome isn't in the default Windows location, and `VS_URL`
-to test a served copy instead. Both run in CI on every push
-(`.github/workflows/test.yml`).
-
-It walks the custom-word editor (add, duplicate rejection, export/import, a
-full run on the **My words** deck) then DEFEND → DECODE → wave 2 → hull loss →
-game over → restart → pause, asserts state at each step, fails on any console
-or page exception, and writes screenshots to `test/shots/` (menu, defend,
-decode typing, decode result banner, word editor, game over, pause).
-
----
-
-MIT licensed — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
