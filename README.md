@@ -171,3 +171,7 @@ full run on the **My words** deck) then DEFEND → DECODE → wave 2 → hull lo
 game over → restart → pause, asserts state at each step, fails on any console
 or page exception, and writes screenshots to `test/shots/` (menu, defend,
 decode typing, decode result banner, word editor, game over, pause).
+
+---
+
+MIT licensed — see [LICENSE](LICENSE).
