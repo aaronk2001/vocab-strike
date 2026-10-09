@@ -30,6 +30,11 @@ Each wave has two phases.
 
 Waves get faster and bigger as you go, from 3 ships up to 5.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/game-states-dark.png">
+  <img alt="State machine of a run: Menu starts Defend, a cleared wave moves to Decode, finished definitions start the next wave, and hull zero ends the run at Game over." src="docs/diagrams/game-states-light.png" width="960">
+</picture>
+
 Rules:
 
 - Case doesn't matter. `4-20 ma` counts as `4-20 mA`.
